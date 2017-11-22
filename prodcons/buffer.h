@@ -16,7 +16,7 @@ typedef struct {
     unsigned int indice_inserimento;
     sem_t pieno;
     sem_t vuoto;
-    //pthread_mutex_t uso_indice_estrazione;
+    pthread_mutex_t uso_indice_estrazione;
     pthread_mutex_t uso_indice_inserimento;
 } buffer_t;
 
