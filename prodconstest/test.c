@@ -1,18 +1,26 @@
-/*
- *  Simple example of a CUnit unit test.
- */
+//
+//  test.c
+//  hwc
+//  In questo file utilizzo CUnit per creare le suite
+//  di test di cui ho bisogno e per eseguire i test
+//  all'interno di esse definite.
+//  Created by Davide Orlando on 22/11/17.
+//
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include "CUnit/Basic.h"
 
-#include "test_buffer_unitario.h"
+#include "prod_cons_usa_getta.c"
+//  suite di test che utilizzano un buffer di
+//  dimensione massima pari a 1.
+#include "test_buffer_unitario.c"
 
 
-/* The main() function for setting up and running the tests.
- * Returns a CUE_SUCCESS on successful running, another
- * CUnit error code on failure.
- */
+//  Chiama delle funzioni che creano le suite e le
+//  aggiungo al registro dei test. Successivamente
+//  esegue i test in modalita basic.
 int main()
 {
    /* initialize the CUnit test registry */

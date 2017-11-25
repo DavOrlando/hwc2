@@ -1,0 +1,26 @@
+
+
+Nel momento in cui si devono eseguire concorrentemente sia il produttore che il 
+consumatore e, inoltre, si richiede che uno dei due deve lavorare prima sul buffer
+viene utilizzata una sleep(). Questo viola l'assunzione di progresso finito, ma
+permette di simulare (abbassando la probabilità di alcune seq. di interleaving) 
+il contesto del test richiesto.
+Quindi nel codice si possono leggere produttori/consumatori usa-getta con
+all'interno questa sleep come prima istruzione. Ovvero lancio il thread e lo faccio
+dormire subito sperando che la sua controparte abbia finito il lavoro.
+
+Un'altra soluzione poteva essere quella di costruire produttori e consumatori
+manovrabili dall'esterno, magari che si mettevano in attesa passiva su un semaforo
+in stile cooperativo e attendevano che dall'esterno la controparte finisse il lavoro
+e notificasse il via libera.
+
+
+Alcuni test utili per ragionare sul problema dell'attesa passiva del 
+consumatore/produttore rispetto la risorsa (alcuni sono presenti nel codice
+commentati come bozze o idee):
+
+-Produzione bloccante in un buffer pieno verifica l'attesa e poi esci, il thread
+che deve fare la produzione rimane in attesa che nel buffer si liberi una posizione
+utile (test_buffer_unitario_pieno_produci_bloccante_attesa).
+-Consumazione bloccante in un buffer vuoto verifica l'attesa e poi esci, stesso problema
+di sopra.
