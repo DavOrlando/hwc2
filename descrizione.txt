@@ -1,26 +1,39 @@
+La soluzione che ho utilizzato fa uso di semafori ed è l'implementazione in C
+della soluzione in pseudo pascal vista in classe. Ho scelto questa in quanto
+ho preferito avere un livello di parallelismo maggiore rispetto alla soluzione
+con mutex e var.condizione.
 
+I test sono stati organizzati in due file distinti (rappresentano due suite):
 
-Nel momento in cui si devono eseguire concorrentemente sia il produttore che il 
+-test_buffer_unitario.c per tutti i test su un buffer di dimensione 1
+-test_buffer_capacitato.c per tutti i test su un buffer di dimensione > 1
+
+In entrambi i file utilizzo delle variabili definite fuori dai test:
+per i messaggi e per il buffer (cosi da permettere l'utilizzo di queste
+variabili nelle funzioni di produzione e consumazione).
+I messaggi vengono inizializzati al setUp della suite.
+Il buffer viene inizializzato dentro ogni i test (a secondo dello stato iniziale
+utile al test).
+
+Dentro ogni test ci sono delle funzioni di produzione e consumazione
+"usa e getta", come suggerito.
+
+Nel momento in cui si devono eseguire concorrentemente sia il produttore che il
 consumatore e, inoltre, si richiede che uno dei due deve lavorare prima sul buffer
 viene utilizzata una sleep(). Questo viola l'assunzione di progresso finito, ma
-permette di simulare (abbassando la probabilità di alcune seq. di interleaving) 
+permette di simulare (abbassando la probabilità di alcune seq. di interleaving)
 il contesto del test richiesto.
-Quindi nel codice si possono leggere produttori/consumatori usa-getta con
-all'interno questa sleep come prima istruzione. Ovvero lancio il thread e lo faccio
-dormire subito sperando che la sua controparte abbia finito il lavoro.
-
 Un'altra soluzione poteva essere quella di costruire produttori e consumatori
-manovrabili dall'esterno, magari che si mettevano in attesa passiva su un semaforo
-in stile cooperativo e attendevano che dall'esterno la controparte finisse il lavoro
-e notificasse il via libera.
+manovrabili dall'esterno (utili solo per i test) e quindi suggerire a questi
+il momento opportuno per iniziare il lavoro.
 
+In alcuni test si può notare come il produttore (o consumatore) di turno si
+mette in attesa passiva della risorsa. Per simulare tutto ciò ho utilizzato
+una pthread_cancel che interrompe il thread in attesa.
 
-Alcuni test utili per ragionare sul problema dell'attesa passiva del 
-consumatore/produttore rispetto la risorsa (alcuni sono presenti nel codice
-commentati come bozze o idee):
-
--Produzione bloccante in un buffer pieno verifica l'attesa e poi esci, il thread
-che deve fare la produzione rimane in attesa che nel buffer si liberi una posizione
-utile (test_buffer_unitario_pieno_produci_bloccante_attesa).
--Consumazione bloccante in un buffer vuoto verifica l'attesa e poi esci, stesso problema
-di sopra.
+Considerazioni finali: testare codice concorrente non è semplice e soprattutto
+è molto frustante dover manovrare con delle sleep l'esecuzione dei flussi per
+utilizzare le asserzioni dei test. In maniera un po estrema considero che assumere
+qualcosa è di per se sbagliato perchè solo lo scheduler conosce come andranno
+le cose in realtà, tutto il resto è una violazione all'assunzione di progresso
+finito.

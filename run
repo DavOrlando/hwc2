@@ -1,0 +1,1 @@
+ clear && gcc -std=c99 prodconstest/test.c prodcons/*.c -w -lcunit -o test -lpthread && ./test && rm test

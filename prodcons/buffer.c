@@ -68,7 +68,7 @@ msg_t* get_bloccante(buffer_t* buffer){
   sem_wait(&(buffer->pieno));
   pthread_mutex_lock(&(buffer->uso_indice_estrazione));
   msg = buffer->messaggi[buffer->indice_estrazione];
-  buffer->messaggi[buffer->indice_inserimento] = NULL;
+  buffer->messaggi[buffer->indice_estrazione] = NULL;
   buffer->indice_estrazione = (buffer->indice_estrazione +1) % buffer->maxsize;
   buffer->size--;
   pthread_mutex_unlock(&(buffer->uso_indice_estrazione));

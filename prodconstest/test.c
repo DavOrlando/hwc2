@@ -12,10 +12,12 @@
 #include <stdlib.h>
 #include "CUnit/Basic.h"
 
-#include "prod_cons_usa_getta.c"
-//  suite di test che utilizzano un buffer di
+//  suite di test che utilizza un buffer di
 //  dimensione massima pari a 1.
 #include "test_buffer_unitario.c"
+//  suite di test che utilizza buffer di dimensione
+//  maggiore a 1.
+#include "test_buffer_capacitato.c"
 
 
 //  Chiama delle funzioni che creano le suite e le
@@ -29,6 +31,7 @@ int main()
 
    /* add a suite to the registry */
    test_buffer_unitario_create();
+   test_buffer_capacitato_create();
 
    /* Run all tests using the CUnit Basic interface */
    CU_basic_set_mode(CU_BRM_VERBOSE);
