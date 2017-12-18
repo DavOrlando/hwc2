@@ -3,7 +3,7 @@
 
 #include <semaphore.h>
 #include <pthread.h>
-#include "msg_string.h"
+#include "../msg/msg_string.h"
 #include <errno.h>
 
 #define BUFFER_ERROR  (msg_t *) NULL
@@ -11,7 +11,6 @@
 typedef struct {
     msg_t** messaggi;   // contenitore di N messaggi
     unsigned int maxsize; // quanti messaggi può opsitare il buffer
-    unsigned int size;
     unsigned int indice_estrazione;
     unsigned int indice_inserimento;
     sem_t pieno;
@@ -40,5 +39,8 @@ msg_t* get_bloccante(buffer_t* );
 // estrazione non bloccante: restituisce BUFFER_ERROR se vuoto
 // ed il valore estratto in caso contrario
 msg_t* get_non_bloccante(buffer_t* );
+//ritorna il numero di messaggi attuali nel buffer
+int get_size(buffer_t* buffer);
+
 
 #endif

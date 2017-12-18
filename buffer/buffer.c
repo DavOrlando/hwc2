@@ -6,7 +6,6 @@ buffer_t* buffer_init(unsigned int maxsize){
   buffer_t* buffer = (buffer_t*) malloc(sizeof(buffer_t));
   buffer->maxsize = maxsize;
   buffer->messaggi = (msg_t**) malloc(sizeof(msg_t*)*(buffer->maxsize));
-  buffer->size = 0;
   buffer->indice_estrazione = 0;
   buffer->indice_inserimento = 0;
   buffer->uso_indice_inserimento = (pthread_mutex_t) PTHREAD_MUTEX_INITIALIZER;
@@ -37,9 +36,8 @@ void buffer_destroy(buffer_t* buffer){
 msg_t* put_bloccante(buffer_t* buffer, msg_t* msg){
   sem_wait(&(buffer->vuoto));
   pthread_mutex_lock(&(buffer->uso_indice_inserimento));
-  buffer->messaggi[buffer->indice_inserimento] = msg;
-  buffer->indice_inserimento = (buffer->indice_inserimento +1) % buffer->maxsize;
-  buffer->size++;
+  buffer->messaggi[(buffer->indice_inserimento) % buffer->maxsize] = msg;
+  buffer->indice_inserimento = (buffer->indice_inserimento +1) ;
   pthread_mutex_unlock(&(buffer->uso_indice_inserimento));
   sem_post(&(buffer->pieno));
   return msg;
@@ -49,13 +47,13 @@ msg_t* put_bloccante(buffer_t* buffer, msg_t* msg){
 // altrimenti effettua l’inserimento e restituisce il messaggio
 // inserito; N.B.: msg!=null
 msg_t* put_non_bloccante(buffer_t* buffer, msg_t* msg){
+  errno = NULL;
   sem_trywait(&(buffer->vuoto));
   if (errno == EAGAIN)
     return BUFFER_ERROR;
   pthread_mutex_lock(&(buffer->uso_indice_inserimento));
-  buffer->messaggi[buffer->indice_inserimento] = msg;
-  buffer->indice_inserimento = (buffer->indice_inserimento +1) % buffer->maxsize;
-  buffer->size++;
+  buffer->messaggi[(buffer->indice_inserimento) % buffer->maxsize] = msg;
+  buffer->indice_inserimento = (buffer->indice_inserimento +1);
   pthread_mutex_unlock(&(buffer->uso_indice_inserimento));
   sem_post(&(buffer->pieno));
   return msg;
@@ -67,10 +65,9 @@ msg_t* get_bloccante(buffer_t* buffer){
   msg_t* msg = NULL;
   sem_wait(&(buffer->pieno));
   pthread_mutex_lock(&(buffer->uso_indice_estrazione));
-  msg = buffer->messaggi[buffer->indice_estrazione];
-  buffer->messaggi[buffer->indice_estrazione] = NULL;
-  buffer->indice_estrazione = (buffer->indice_estrazione +1) % buffer->maxsize;
-  buffer->size--;
+  msg = buffer->messaggi[(buffer->indice_estrazione)  % buffer->maxsize];
+  buffer->messaggi[(buffer->indice_estrazione) % buffer->maxsize] = NULL;
+  buffer->indice_estrazione = (buffer->indice_estrazione +1);
   pthread_mutex_unlock(&(buffer->uso_indice_estrazione));
   sem_post(&(buffer->vuoto));
   return msg;
@@ -84,11 +81,23 @@ msg_t* get_non_bloccante(buffer_t* buffer){
   if (errno == EAGAIN)
     return msg;
   pthread_mutex_lock(&(buffer->uso_indice_estrazione));
-  msg = buffer->messaggi[buffer->indice_estrazione];
-  buffer->messaggi[buffer->indice_estrazione] = NULL;
-  buffer->indice_estrazione = (buffer->indice_estrazione +1) % buffer->maxsize;
-  buffer->size--;
+  msg = buffer->messaggi[(buffer->indice_estrazione) % buffer->maxsize];
+  buffer->messaggi[(buffer->indice_estrazione) % buffer->maxsize] = NULL;
+  buffer->indice_estrazione = (buffer->indice_estrazione +1);
   pthread_mutex_unlock(&(buffer->uso_indice_estrazione));
   sem_post(&(buffer->vuoto));
   return msg;
 };
+
+//ritorna il numero attuale di messaggi nel buffer
+int get_size(buffer_t* buffer){
+    if(buffer == NULL)
+      return -1;
+    int size;
+    pthread_mutex_lock(&(buffer->uso_indice_inserimento));
+    pthread_mutex_lock(&(buffer->uso_indice_estrazione));
+    size = buffer->indice_inserimento - buffer->indice_estrazione;
+    pthread_mutex_unlock(&(buffer->uso_indice_estrazione));
+    pthread_mutex_unlock(&(buffer->uso_indice_inserimento));
+    return size;
+}

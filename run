@@ -1,1 +1,1 @@
- clear && gcc -std=c99 prodconstest/test.c prodcons/*.c -w -lcunit -o test -lpthread && ./test && rm test
+ clear && gcc -std=c99 msg/*.c buffer/*.c list/*.c provider/*.c reader/*.c accepter/*.c dispatcher/*.c TestDriver.c -w -lcunit -o main -lpthread && ./main && rm main

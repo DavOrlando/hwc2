@@ -1,4 +1,3 @@
-
 #include "msg_string.h"
 
 msg_t* msg_init_string(void* content) {
